@@ -3,7 +3,7 @@ import numpy as np
 
 class Minesweeper:
     """A minesweeper game instance."""
-    
+
     def __init__(self, width, height, mines):
         self.width = width
         self.height = height
@@ -14,11 +14,17 @@ class Minesweeper:
 
 
     def open(self, x, y):
-        """Opens a cell. If it has no bomb around, also opens all surrounding cells."""
+        """
+        Opens a cell. If it has no bomb around, also opens all surrounding cells.
+        Returns True is a bomb was hit, otherwhise false.
+        """
         if self.explored[x, y]:
-            return
+            return False
         
         self.explored[x, y] = 1
+
+        if self.field[x, y] == -1:
+            return True
 
         if self.field[x, y] == 0:
             for nx, ny in self._get_neighbours(x, y):
