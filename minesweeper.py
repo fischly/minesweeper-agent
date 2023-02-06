@@ -30,6 +30,12 @@ class Minesweeper:
             for nx, ny in self._get_neighbours(x, y):
                 self.open(nx, ny)
 
+    def is_done(self):
+        """Returns True if all non-mined fields have been opened."""
+        # if the sum of the number of explored field plus the number of mines is equal to the number
+        # of total cells, the game is finished
+        return np.sum(np.where(self.field == -1, 1, self.explored)) == self.width * self.height
+
 
     def generate_field(self):
         """Generate a new field by placing the mines randomly."""
