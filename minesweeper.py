@@ -2,7 +2,8 @@ import random
 import numpy as np
 
 class Minesweeper:
-
+    """A minesweeper game instance."""
+    
     def __init__(self, width, height, mines):
         self.width = width
         self.height = height
@@ -11,7 +12,9 @@ class Minesweeper:
         self.field = self.generate_field()
         self.explored = np.full((width, height), 0)
 
+
     def open(self, x, y):
+        """Opens a cell. If it has no bomb around, also opens all surrounding cells."""
         if self.explored[x, y]:
             return
         
@@ -23,6 +26,7 @@ class Minesweeper:
 
 
     def generate_field(self):
+        """Generate a new field by placing the mines randomly."""
         # create a 1d array with exactly #mines -1's and the rest filled with zeros         
         field = np.concatenate([np.ones(self.mines) * -1, np.zeros(self.width * self.height - self.mines)])
 
@@ -42,11 +46,15 @@ class Minesweeper:
         
         return field
 
+
     def get_visible_field(self):
+        """Returns only the field that is currently visible. Unknown fields contain the value -2."""
         # if a cell is not explored yet, return -2, also return the actual cell value
         return np.where(self.explored == 1, self.field, -2)
                 
+
     def _calculate_number_of_bombs(self, field, x, y):
+        """Helper function to calculate the number of surrounding bombs."""
         num = 0
 
         for nx, ny in self._get_neighbours(x, y):
