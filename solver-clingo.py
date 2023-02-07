@@ -28,12 +28,22 @@ class ClingoSolver:
             for y in range(self.game.height):
                 cell = visible_field[x, y]
 
-                if cell >= 0:
+                if cell == -2:
+                    continue
+                
+                # if it is a marked bomb, add this as fact to our assumptions
+                if cell == -3:
+                    #print(f'bomb({x + 1}, {y + 1}).')
+                    # self.ctl.add(f'bomb({x + 1}, {y + 1}).')
+                    pass
+                else:
+                    #print(f'number({x + 1}, {y + 1}, {cell}).')
                     self.ctl.add(f'number({x + 1}, {y + 1}, {int(cell)}).')
         
         self.ctl.ground()
 
         actions = {}
+        bombs = {}
         model_count = 0
 
         with self.ctl.solve(yield_=True) as hnd:
@@ -49,10 +59,23 @@ class ClingoSolver:
                             actions[action] = 1
                         else:
                             actions[action] += 1
+                    
+                    if symbol.name == 'bomb':
+                        bomb = (symbol.arguments[0].number, symbol.arguments[1].number)
+
+                        if not bomb in bombs:
+                            bombs[bomb] = 1
+                        else:
+                            bombs[bomb] += 1
 
                 model_count += 1
         
         logging.debug('ACTIONS:', actions)
+        # logging.debug('BOMBS: ', bombs)
+
+        proofen_bombs = filter(lambda b: bombs[b] == model_count, bombs)
+        for proofen_bomb in proofen_bombs:
+            self.game.mark(proofen_bomb[0] - 1, proofen_bomb[1] - 1)
 
         # select action that occured most often in the answer set
         # at best, it is one that occured in ALL the answer sets, which would make this action 100% safe
@@ -75,14 +98,12 @@ if __name__ == '__main__':
 
     # fix random seed
     import numpy as np
-    np.random.seed(1)
+    seed = int(time.time() * 1000) % (2**32 - 1)
+    np.random.seed(seed)
 
     g = Minesweeper(30, 16, 99)
     if g.open(4,4):
         exit()
-
-    print('GAME:')
-    print(g)
 
     s = ClingoSolver(g)
 
@@ -109,4 +130,12 @@ if __name__ == '__main__':
         # time.sleep(1)
 
     print("--- %s seconds ---" % (time.time() - start_time))
+    print("--- seed: ", seed)
     
+'''
+seed 1: 
+
+
+v1 (bombs marked)    -> 24.12
+v2 (no bombs marked) -> 25.3
+'''

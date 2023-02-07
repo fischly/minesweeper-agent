@@ -10,8 +10,8 @@ class Minesweeper:
         self.mines = mines
 
         self.field = self.generate_field()
-        self.explored = np.full((width, height), 0)
-
+        self.explored = np.zeros((width, height))
+        self.marked = np.zeros((width, height))
 
     def open(self, x, y):
         """
@@ -29,6 +29,12 @@ class Minesweeper:
         if self.field[x, y] == 0:
             for nx, ny in self._get_neighbours(x, y):
                 self.open(nx, ny)
+
+
+    def mark(self, x, y):
+        """Mark a cell as bomb."""
+        self.marked[x, y] = 1
+
 
     def is_done(self):
         """Returns True if all non-mined fields have been opened."""
@@ -62,7 +68,10 @@ class Minesweeper:
     def get_visible_field(self):
         """Returns only the field that is currently visible. Unknown fields contain the value -2."""
         # if a cell is not explored yet, return -2, also return the actual cell value
-        return np.where(self.explored == 1, self.field, -2)
+        visible = np.where(self.explored == 1, self.field, -2)
+        flagged = np.where(self.marked == 1, -3, visible)
+
+        return flagged
                 
 
     def _calculate_number_of_bombs(self, field, x, y):
