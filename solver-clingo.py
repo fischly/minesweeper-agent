@@ -16,7 +16,7 @@ class ClingoSolver:
     def reset(self):
         self.ctl = Control()
         self.ctl.configuration.solve.models = 0 # return all models
-        self.ctl.load('v3.lp') # load the solver program
+        self.ctl.load('v4.lp') # load the solver program
         self.ctl.add(f'width({self.game.width}).\nheight({self.game.height}).\nnumberOfBombs({self.game.mines}).')
 
     def solve_step(self):
