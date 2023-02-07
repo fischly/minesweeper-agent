@@ -42,6 +42,9 @@ class Minesweeper:
         # of total cells, the game is finished
         return np.sum(np.where(self.field == -1, 1, self.explored)) == self.width * self.height
 
+    def percentage_done(self):
+        """Returns the percentage of how much of the field has been opened yet."""
+        return np.sum(self.explored) / (self.width * self.height - self.mines)
 
     def generate_field(self):
         """Generate a new field by placing the mines randomly."""
@@ -108,13 +111,18 @@ class Minesweeper:
         c = np.char.mod('%i', visible)
         c[c == '-2'] = ' '
         c[c == '-1'] = 'B'
+        c[c == '-3'] = '\u2691'
 
-        result = '+' + '-' * (self.width * 2 - 1) + '+\n'
-        
+        percentage = str(int(self.percentage_done() * 100 + 0.5)) + '%'
+
+        result = '+-' + '-' * (self.width * 2 - 1) + '-+\n'
+        result += '| Done: ' + percentage + ' ' * (self.width * 2 - 7 - len(percentage)) + ' |\n'
+        result += '|-' + '-' * (self.width * 2 - 1) + '-|\n'
+
         for row in range(c.shape[0]):
-            result += '|' + ' '.join(c[row]) + '|\n'
+            result += '| ' + ' '.join(c[row]) + ' |\n'
 
-        result += '+' + '-' * (self.width * 2 - 1) +  '+'
+        result += '+-' + '-' * (self.width * 2 - 1) +  '-+'
 
         return result
 
