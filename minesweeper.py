@@ -9,7 +9,7 @@ class Minesweeper:
         self.height = height
         self.mines = mines
 
-        self.field = self.generate_field()
+        self.field = None  # load the field on first opening, so we can ensure that the first cell is not a bomb
         self.explored = np.zeros((width, height))
         self.marked = np.zeros((width, height))
 
@@ -18,6 +18,9 @@ class Minesweeper:
         Opens a cell. If it has no bomb around, also opens all surrounding cells.
         Returns True is a bomb was hit, otherwhise false.
         """
+        if self.field is None:
+            self.field = self.generate_field((x, y))
+
         if self.explored[x, y]:
             return False
         
@@ -46,9 +49,9 @@ class Minesweeper:
         """Returns the percentage of how much of the field has been opened yet."""
         return np.sum(self.explored) / (self.width * self.height - self.mines)
 
-    def generate_field(self):
+    def generate_field(self, start_position=None):
         """Generate a new field by placing the mines randomly."""
-        # create a 1d array with exactly #mines -1's and the rest filled with zeros         
+        # create a 1d array with exactly (number of mines) -1's and the rest filled with zeros         
         field = np.concatenate([np.ones(self.mines) * -1, np.zeros(self.width * self.height - self.mines)])
 
         # shuffle the 1d array to get a random mine placement
@@ -57,7 +60,22 @@ class Minesweeper:
         # reshape to 2d array to represent the field
         field = field.reshape((self.width, self.height))
 
-            
+        # make sure we do not have any bombs at the start position and its surrounding
+        if start_position:
+            # number of bombs inside the starting neighbourhood
+            bombs = int(abs(np.sum(field[start_position[0] - 1:start_position[0]+2, start_position[1]-1:start_position[1]+2])))
+            # clear the starting neighbourhood
+            field[start_position[0] - 1:start_position[0]+2, start_position[1]-1:start_position[1]+2] = 0
+
+            # reintroduce the deleted bombs on new (not yet occupied) positions (not in the starting neighbourhood)
+            for _ in range(bombs):
+                while True:
+                    new_x = np.random.choice([n for n in range(self.width) if n not in range(start_position[0], start_position[0] + 2)])
+                    new_y = np.random.choice([n for n in range(self.height) if n not in range(start_position[1], start_position[1] + 2)])
+
+                    if field[new_x, new_y] != -1:
+                        break
+                field[new_x, new_y] = -1
 
         # calculate numbers
         for x in range(self.width):
