@@ -4,7 +4,7 @@
 -bomb(X, Y) :- number(X, Y, _).
 
 % a field consists of w x h cells 
-cell(X, Y) :- width(W), height(H), X = 1..W, Y = 1..H.
+cell(1..W, 1..H) :- width(W), height(H).
 
 % each field can either be a bomb or not a bomb
 bomb(X, Y) | -bomb(X, Y) :- cell(X, Y).
