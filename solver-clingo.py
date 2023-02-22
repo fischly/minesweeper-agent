@@ -134,12 +134,23 @@ if __name__ == '__main__':
     ch.setFormatter(logging.Formatter(fmt=' %(name)s :: %(levelname)-8s :: %(message)s'))
     logging.getLogger().addHandler(ch)
 
+    # parsing arguments
+    parser = argparse.ArgumentParser(prog='solver-clingo', description='Solves a randomly generated minesweeper instance using Clingo')
+    parser.add_argument('-w', '--width', help='The width of the minesweeper instance', type=int, default=30) 
+    parser.add_argument('-he', '--height', help='The height of the minesweeper instance', type=int, default=16) 
+    parser.add_argument('-b', '--bombs', help='The number of bombs of the minesweeper instance', type=int, default=99) 
+    parser.add_argument('-s', '--seed', help='Fixes the seed to generate the random minesweeper instance', type=int) 
+    parser.add_argument('-d', '--delay', help='Delay in milliseconds between performing actions', type=int) 
+    parser.add_argument('-i', '--interactive', help='If set, waits for user input between each action', action='store_true')
+
+    args = parser.parse_args()
+
     # fix random seed
     import numpy as np
-    seed = int(time.time() * 1000) % (2**32 - 1)
+    seed = int(time.time() * 1000) % (2**32 - 1) if args.seed is None else args.seed
     np.random.seed(seed)
 
-    g = Minesweeper(30, 16, 99)
+    g = Minesweeper(args.width, args.height, args.bombs)
     if g.open(4,4):
         exit()
 
@@ -166,6 +177,11 @@ if __name__ == '__main__':
             break
 
         # os.system('clear')
+
+        if args.interactive:
+            input('Press a key to perform next action...')
+        elif args.delay is not None:
+            time.sleep(args.delay / 1000)
 
     print("--- %s seconds ---" % (time.time() - start_time))
     print("--- seed: ", seed)
