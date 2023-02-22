@@ -46,14 +46,12 @@ class ClingoSolver:
                 if number_of_bombs >= cell:
                     for nx, ny in neighbours:
                         if visible_field[nx, ny] == -2:
-                            print(f'Algorithmically opening ({nx}, {ny})')
                             self.game.open(nx, ny)
 
                 # (2) check if a number's neighbours can only be mines, in which case we mark it as mines
                 if cell >= number_of_unknowns + number_of_bombs:
                     for nx, ny in neighbours:
                         if visible_field[nx, ny] == -2:
-                            print(f'!!!!!!!!!!!!!!!!! Algorithmically marking ({nx}, {ny})')
                             self.game.mark(nx, ny)
 
 
@@ -121,75 +119,5 @@ class ClingoSolver:
 
         logging.info(f'Selected best action {best_action} which occured in {actions[best_action]} of {model_count} answer sets ({(actions[best_action] / model_count)*100}%).')
 
-        return best_action
-
-    def _get_action_probabilities(self, models):
-        pass
-
-if __name__ == '__main__':
-    # logging stuff
-    logging.basicConfig()
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.WARNING)
-    ch.setFormatter(logging.Formatter(fmt=' %(name)s :: %(levelname)-8s :: %(message)s'))
-    logging.getLogger().addHandler(ch)
-
-    # parsing arguments
-    parser = argparse.ArgumentParser(prog='solver-clingo', description='Solves a randomly generated minesweeper instance using Clingo')
-    parser.add_argument('-w', '--width', help='The width of the minesweeper instance', type=int, default=30) 
-    parser.add_argument('-he', '--height', help='The height of the minesweeper instance', type=int, default=16) 
-    parser.add_argument('-b', '--bombs', help='The number of bombs of the minesweeper instance', type=int, default=99) 
-    parser.add_argument('-s', '--seed', help='Fixes the seed to generate the random minesweeper instance', type=int) 
-    parser.add_argument('-d', '--delay', help='Delay in milliseconds between performing actions', type=int) 
-    parser.add_argument('-i', '--interactive', help='If set, waits for user input between each action', action='store_true')
-
-    args = parser.parse_args()
-
-    # fix random seed
-    import numpy as np
-    seed = int(time.time() * 1000) % (2**32 - 1) if args.seed is None else args.seed
-    np.random.seed(seed)
-
-    g = Minesweeper(args.width, args.height, args.bombs)
-    if g.open(4,4):
-        exit()
-
-    s = ClingoSolver(g)
-
-    start_time = time.time()
-
-    while True:
-        best_action = s.solve_step()
-        
-        print('=== OPENING ', best_action[0] - 1, best_action[1] - 1)
-
-        if g.open(best_action[0] - 1, best_action[1] - 1):
-            print(' === GAME OVER === ')
-            break
-        print(g)
-
-        print('Trying trivial opening')
-        s.find_trivial()
-
-        if g.is_done():
-            print(' === WON === ')
-            print(g)
-            break
-
-        # os.system('clear')
-
-        if args.interactive:
-            input('Press a key to perform next action...')
-        elif args.delay is not None:
-            time.sleep(args.delay / 1000)
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print("--- seed: ", seed)
-    
-'''
-seed 1: 
-
-
-v1 (bombs marked)    -> 24.12
-v2 (no bombs marked) -> 25.3
-'''
+        # return the best action adjusted for a coordinate system that starts with 0 (the clingo implementation starts at 1)
+        return (best_action[0] - 1, best_action[1] - 1)
