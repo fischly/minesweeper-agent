@@ -1,6 +1,7 @@
 import logging
 import time
 import os
+import argparse
 
 from clingo.symbol import Number, Function
 from clingo.control import Control
@@ -18,6 +19,43 @@ class ClingoSolver:
         self.ctl.configuration.solve.models = 0 # return all models
         self.ctl.load('v4.lp') # load the solver program
         self.ctl.add(f'width({self.game.width}).\nheight({self.game.height}).\nnumberOfBombs({self.game.mines}).')
+
+    def find_trivial(self):
+        visible_field = self.game.get_visible_field()
+
+        for x in range(self.game.width):
+            for y in range(self.game.height):
+                cell = visible_field[x, y]
+
+                # flagged or unknown
+                if cell == -3 or cell == -2 or cell == -1:
+                    continue
+
+                number_of_bombs = 0
+                number_of_unknowns = 0
+
+                neighbours = list(self.game._get_neighbours(x, y))
+                
+                for nx, ny in neighbours:
+                    if visible_field[nx, ny] == -3 or visible_field[nx, ny] == -1:
+                        number_of_bombs += 1
+                    if visible_field[nx, ny] == -2:
+                        number_of_unknowns += 1
+                
+                # (1) check if number is satisfied, in which case we open it's neighbours
+                if number_of_bombs >= cell:
+                    for nx, ny in neighbours:
+                        if visible_field[nx, ny] == -2:
+                            print(f'Algorithmically opening ({nx}, {ny})')
+                            self.game.open(nx, ny)
+
+                # (2) check if a number's neighbours can only be mines, in which case we mark it as mines
+                if cell >= number_of_unknowns + number_of_bombs:
+                    for nx, ny in neighbours:
+                        if visible_field[nx, ny] == -2:
+                            print(f'!!!!!!!!!!!!!!!!! Algorithmically marking ({nx}, {ny})')
+                            self.game.mark(nx, ny)
+
 
     def solve_step(self):
         self.reset()
@@ -112,22 +150,22 @@ if __name__ == '__main__':
     while True:
         best_action = s.solve_step()
         
-        print('=== OPENING ', best_action)
+        print('=== OPENING ', best_action[0] - 1, best_action[1] - 1)
 
         if g.open(best_action[0] - 1, best_action[1] - 1):
             print(' === GAME OVER === ')
             break
+        print(g)
+
+        print('Trying trivial opening')
+        s.find_trivial()
 
         if g.is_done():
             print(' === WON === ')
+            print(g)
             break
 
         # os.system('clear')
-        print(g)
-
-        import time
-
-        # time.sleep(1)
 
     print("--- %s seconds ---" % (time.time() - start_time))
     print("--- seed: ", seed)
