@@ -6,6 +6,7 @@ import numpy as np
 
 from minesweeper import Minesweeper
 from solver_clingo import ClingoSolver
+from solver_clingo_grouped import ClingoSolverGrouped
 
 
 if __name__ == '__main__':
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     if args.solver == 'clingo':
         s = ClingoSolver(g)
     elif args.solver == 'clingo-grouped':
-        assert False, 'not implemented yet'
+        s = ClingoSolverGrouped(g)
     else:
         assert False, 'not implemented yet'
         

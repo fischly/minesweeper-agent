@@ -48,6 +48,17 @@ class Minesweeper:
         """Mark a cell as bomb."""
         self.marked[x, y] = 1
 
+    def is_marked(self, x, y):
+        """Returns True if this cell is marked, otherwise False."""
+        return self.marked[x, y] == 1
+    
+    def is_open(self, x, y):
+        """Returns whether the given cell is opened (either opened or marked)."""
+        return self.marked[x, y] == 1 or self.explored[x, y] == 1
+
+    def is_closed(self, x, y):
+        """Returns whether the given cell is closed (not opened and not marked)."""
+        return not self.is_open(x, y)
 
     def is_done(self):
         """Returns True if all non-mined fields have been opened."""
@@ -183,6 +194,12 @@ class Minesweeper:
                    continue
 
                 yield (nx, ny)
+
+    def _get_closed_neighbours(self, x, y):
+        """Returns all closed (not opened or marked) neighbouring cell's coordinates of the given cell."""
+        neighbours = self._get_neighbours(x, y)
+        
+        return filter(lambda nb: self.is_closed(*nb), neighbours)
 
     def __str__(self):
         visible = self.get_visible_field().T
