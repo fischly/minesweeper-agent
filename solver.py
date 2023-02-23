@@ -40,7 +40,8 @@ if __name__ == '__main__':
     g = Minesweeper(args.width, args.height, args.bombs)
 
     # open the first field (so the solver has something to go on)
-    if g.open(4, 4):
+    if g.open(*(2, 2) if args.width >= 3 and args.height >= 3 else (0, 0)):
+        print('Game lost on first cell opened :(')
         exit()
 
     if args.solver == 'clingo':

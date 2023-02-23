@@ -82,7 +82,7 @@ class Minesweeper:
         field = field.reshape((self.width, self.height))
 
         # make sure we do not have any bombs at the start position and its surrounding
-        if start_position:
+        if start_position and (self.width * self.height) - 9 >= self.mines:
             # number of bombs inside the starting neighbourhood
             bombs = int(abs(np.sum(field[start_position[0] - 1:start_position[0]+2, start_position[1]-1:start_position[1]+2])))
             # clear the starting neighbourhood
@@ -91,8 +91,12 @@ class Minesweeper:
             # reintroduce the deleted bombs on new (not yet occupied) positions (not in the starting neighbourhood)
             for _ in range(bombs):
                 while True:
-                    new_x = np.random.choice([n for n in range(self.width) if n not in range(start_position[0], start_position[0] + 2)])
-                    new_y = np.random.choice([n for n in range(self.height) if n not in range(start_position[1], start_position[1] + 2)])
+                    new_x = np.random.choice([n for n in range(self.width)])
+                    new_y = np.random.choice([n for n in range(self.height)])
+
+                    if new_x in range(start_position[0] - 1, start_position[0] + 2) and \
+                       new_y in range(start_position[1] - 1, start_position[1] + 2):
+                       continue
 
                     if field[new_x, new_y] != -1:
                         break
