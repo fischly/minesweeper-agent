@@ -1,5 +1,6 @@
 import argparse
 import time
+import random
 import logging
 import numpy as np
 
@@ -18,6 +19,7 @@ if __name__ == '__main__':
     # parsing arguments
     parser = argparse.ArgumentParser(prog='solver-clingo', description='Solves a randomly generated minesweeper instance using Clingo')
     parser.add_argument('--solver', choices=['clingo', 'clingo-grouped'], const='clingo', default='clingo', nargs='?', help='The solving approach to use')
+    parser.add_argument('--no-trivial', help='If set, do not perform trivial cell opening/marking', action='store_true')
     parser.add_argument('-w', '--width', help='The width of the minesweeper instance', type=int, default=30) 
     parser.add_argument('-he', '--height', help='The height of the minesweeper instance', type=int, default=16) 
     parser.add_argument('-b', '--bombs', help='The number of bombs of the minesweeper instance', type=int, default=99) 
@@ -30,10 +32,14 @@ if __name__ == '__main__':
 
     # fix random seed
     seed = int(time.time() * 1000) % (2**32 - 1) if args.seed is None else args.seed
+    print('Seed: ', seed)
     np.random.seed(seed)
 
+    # initialize the minesweeper instance
     g = Minesweeper(args.width, args.height, args.bombs)
-    if g.open(4,4):
+
+    # open the first field (so the solver has something to go on)
+    if g.open(4, 4):
         exit()
 
     if args.solver == 'clingo':
@@ -45,6 +51,7 @@ if __name__ == '__main__':
         
 
     start_time = time.time()
+    steps_done = 1
 
     while True:
         best_action = s.solve_step()
@@ -54,10 +61,12 @@ if __name__ == '__main__':
         if g.open(*best_action):
             print(' === GAME OVER === ')
             break
-        print(g)
+        
+        steps_done += 1
 
-        print('Trying trivial opening')
-        s.find_trivial()
+        if not args.no_trivial:
+            print('Trivials')
+            g.open_trivials()
 
         if g.is_done():
             print(' === WON === ')
@@ -65,11 +74,14 @@ if __name__ == '__main__':
             break
 
         # os.system('clear')
+        print(g)
 
         if args.interactive:
             input('Press a key to perform next action...')
         elif args.delay is not None:
             time.sleep(args.delay / 1000)
 
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print("--- seed: ", seed)
+    if not args.interactive:
+        print('--- {0:.2f} seconds ---'.format((time.time() - start_time)))
+    print('--- {0} (non-trivial) actions done ---'.format((steps_done)))
+    print('--- seed: {} --- '.format(seed))

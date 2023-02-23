@@ -20,40 +20,6 @@ class ClingoSolver:
         self.ctl.load('v4.lp') # load the solver program
         self.ctl.add(f'width({self.game.width}).\nheight({self.game.height}).\nnumberOfBombs({self.game.mines}).')
 
-    def find_trivial(self):
-        visible_field = self.game.get_visible_field()
-
-        for x in range(self.game.width):
-            for y in range(self.game.height):
-                cell = visible_field[x, y]
-
-                # flagged or unknown
-                if cell == -3 or cell == -2 or cell == -1:
-                    continue
-
-                number_of_bombs = 0
-                number_of_unknowns = 0
-
-                neighbours = list(self.game._get_neighbours(x, y))
-                
-                for nx, ny in neighbours:
-                    if visible_field[nx, ny] == -3 or visible_field[nx, ny] == -1:
-                        number_of_bombs += 1
-                    if visible_field[nx, ny] == -2:
-                        number_of_unknowns += 1
-                
-                # (1) check if number is satisfied, in which case we open it's neighbours
-                if number_of_bombs >= cell:
-                    for nx, ny in neighbours:
-                        if visible_field[nx, ny] == -2:
-                            self.game.open(nx, ny)
-
-                # (2) check if a number's neighbours can only be mines, in which case we mark it as mines
-                if cell >= number_of_unknowns + number_of_bombs:
-                    for nx, ny in neighbours:
-                        if visible_field[nx, ny] == -2:
-                            self.game.mark(nx, ny)
-
 
     def solve_step(self):
         self.reset()
@@ -69,11 +35,9 @@ class ClingoSolver:
                 
                 # if it is a marked bomb, add this as fact to our assumptions
                 if cell == -3:
-                    #print(f'bomb({x + 1}, {y + 1}).')
                     # self.ctl.add(f'bomb({x + 1}, {y + 1}).')
                     pass
                 else:
-                    #print(f'number({x + 1}, {y + 1}, {cell}).')
                     self.ctl.add(f'number({x + 1}, {y + 1}, {int(cell)}).')
         
         self.ctl.ground()

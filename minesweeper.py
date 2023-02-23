@@ -13,22 +13,32 @@ class Minesweeper:
         self.explored = np.zeros((width, height))
         self.marked = np.zeros((width, height))
 
+        assert mines < width * height, 'cannot set more mines than number of cells in total'
+
+        self.open_counter = 0
+        self.trivial_counter = 0
+
     def open(self, x, y):
         """
-        Opens a cell. If it has no bomb around, also opens all surrounding cells.
-        Returns True is a bomb was hit, otherwhise false.
+            Opens a cell. If it has no bomb around, also opens all surrounding cells.
+            Returns True is a bomb was hit, otherwhise false.
         """
+        # if this is the first time opening a cell, generate the random field first
         if self.field is None:
             self.field = self.generate_field((x, y))
 
+        # if cell is already explored, ignore this call
         if self.explored[x, y]:
             return False
         
+        # otherwise, mark cell as explored
         self.explored[x, y] = 1
+        self.open_counter += 1
 
         if self.field[x, y] == -1:
             return True
 
+        # if opening a 0, open up all neighbours automatically
         if self.field[x, y] == 0:
             for nx, ny in self._get_neighbours(x, y):
                 self.open(nx, ny)
@@ -87,12 +97,64 @@ class Minesweeper:
 
 
     def get_visible_field(self):
-        """Returns only the field that is currently visible. Unknown fields contain the value -2."""
-        # if a cell is not explored yet, return -2, also return the actual cell value
+        """
+            Returns only the field that is currently visible.
+            Unknown fields contain the value -2, marked cell contain the value -3.
+        """
         visible = np.where(self.explored == 1, self.field, -2)
         flagged = np.where(self.marked == 1, -3, visible)
 
         return flagged
+
+    def open_trivials(self):
+        """
+            Handels the trivial cases that can easily be solved algorithmically:
+             - Looks for number-cells that are already satisfied, in which case it opens all unexplored neighbors.
+             - Looks for number-cells where the number of marked bombs plus the number of unknowns sum up to the cell value, 
+                marking the unknowns as bombs.
+        """
+        visible_field = self.get_visible_field()
+
+        did_change = False
+
+        # check each cell
+        for x in range(self.width):
+            for y in range(self.height):
+                cell = visible_field[x, y]
+
+                # ignore flagged or unknown
+                if cell == -3 or cell == -2 or cell == -1:
+                    continue
+
+                # count neighbouring bomb/unknown cells
+                number_of_bombs = 0
+                number_of_unknowns = 0
+
+                neighbours = list(self._get_neighbours(x, y))
+                
+                for nx, ny in neighbours:
+                    if visible_field[nx, ny] == -3 or visible_field[nx, ny] == -1:
+                        number_of_bombs += 1
+                    if visible_field[nx, ny] == -2:
+                        number_of_unknowns += 1
+                
+                # (1) check if number is satisfied, in which case we open it's neighbours
+                if number_of_bombs >= cell:
+                    for nx, ny in neighbours:
+                        if visible_field[nx, ny] == -2:
+                            self.open(nx, ny)
+                            did_change = True
+
+                # (2) check if a number's neighbours can only be mines, in which case we mark it as mines
+                if cell >= number_of_unknowns + number_of_bombs:
+                    for nx, ny in neighbours:
+                        if visible_field[nx, ny] == -2:
+                            self.mark(nx, ny)
+                            did_change = True
+
+        if did_change:
+            self.open_trivials()
+        
                 
 
     def _calculate_number_of_bombs(self, field, x, y):
