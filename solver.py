@@ -7,6 +7,8 @@ import numpy as np
 from minesweeper import Minesweeper
 from solver_clingo import ClingoSolver
 from solver_clingo_grouped import ClingoSolverGrouped
+from solver_csp import CSPSolver
+from solver_csp_grouped import CSPSolverGrouped
 
 
 if __name__ == '__main__':
@@ -19,7 +21,7 @@ if __name__ == '__main__':
 
     # parsing arguments
     parser = argparse.ArgumentParser(prog='solver-clingo', description='Solves a randomly generated minesweeper instance using Clingo')
-    parser.add_argument('--solver', choices=['clingo', 'clingo-grouped'], const='clingo', default='clingo', nargs='?', help='The solving approach to use')
+    parser.add_argument('--solver', choices=['clingo', 'clingo-grouped', 'csp', 'csp-grouped'], const='clingo', default='clingo', nargs='?', help='The solving approach to use')
     parser.add_argument('--no-trivial', help='If set, do not perform trivial cell opening/marking', action='store_true')
     parser.add_argument('-w', '--width', help='The width of the minesweeper instance', type=int, default=30) 
     parser.add_argument('-he', '--height', help='The height of the minesweeper instance', type=int, default=16) 
@@ -48,6 +50,10 @@ if __name__ == '__main__':
         s = ClingoSolver(g)
     elif args.solver == 'clingo-grouped':
         s = ClingoSolverGrouped(g)
+    elif args.solver == 'csp':
+        s = CSPSolver(g)
+    elif args.solver == 'csp-grouped':
+        s = CSPSolverGrouped(g)
     else:
         assert False, 'not implemented yet'
         
