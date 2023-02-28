@@ -8,11 +8,6 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 
-from solver_clingo import ClingoSolver
-from solver_clingo_grouped import ClingoSolverGrouped
-from solver_csp import CSPSolver
-from solver_csp_grouped import CSPSolverGrouped
-
 
 def load_runs(file):
     with open(file, 'r') as myfile:
@@ -70,7 +65,7 @@ def get_statistics(runs):
 
 
 if __name__ == '__main__':
-    runs, grouped_by_seed, grouped_by_solver = load_runs('bench.log')
+    runs, grouped_by_seed, grouped_by_solver = load_runs('benchmark/bench.log')
 
     fig, axs = plt.subplots(2, 2)
     

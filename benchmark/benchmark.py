@@ -6,6 +6,9 @@ import pickle
 import codecs
 import numpy as np
 
+import sys
+sys.path.insert(0, '.')
+
 from minesweeper import Minesweeper
 
 from solver_clingo import ClingoSolver
@@ -51,7 +54,7 @@ def solve(solver):
     return solver.game.is_done(), time_diff, steps_done, solver.game.percentage_done()
 
 def append_to_file(stats):
-    with open('bench.log', 'a') as myfile:
+    with open('benchmark/bench.log', 'a') as myfile:
         pickled_b64 = codecs.encode(pickle.dumps(stats), 'base64').decode()
         myfile.write(pickled_b64 + '\n')
 
