@@ -67,7 +67,7 @@ def get_statistics(runs):
 if __name__ == '__main__':
     runs, grouped_by_seed, grouped_by_solver = load_runs('benchmark/bench.log')
 
-    fig, axs = plt.subplots(2, 2)
+    fig, axs = plt.subplots(2, 2, figsize=(16, 10))
     
     for i, solver in enumerate(['ClingoSolver', 'ClingoSolverGrouped', 'CSPSolver', 'CSPSolverGrouped']):
         bin_values, bins = get_bins(grouped_by_solver[solver])
@@ -87,4 +87,6 @@ if __name__ == '__main__':
         ax.text(5, 160, 'Std.Dev.: {:.2f}s'.format(std), fontsize=12)
 
     plt.margins(x=0)
-    plt.show() 
+    # plt.show() 
+    plt.savefig('figures/solver-comparison.pdf')
+    plt.savefig('figures/solver-comparison.png')

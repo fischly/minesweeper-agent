@@ -28,14 +28,10 @@ def solve(solver):
     start_time = time.time()
     steps_done = 0
 
-
     while True:
         best_action = solver.solve_step()
         
-        # print('=== OPENING ', best_action)
-
         if solver.game.open(*best_action):
-            # print(' === GAME OVER === ')
             break
         
         steps_done += 1
@@ -43,11 +39,7 @@ def solve(solver):
         solver.game.open_trivials()
 
         if solver.game.is_done():
-            # print(' === WON === ')
-            # print(solver.game)
             break
-
-        # print(solver.game)
 
     time_diff = time.time() - start_time
 
@@ -60,7 +52,10 @@ def append_to_file(stats):
 
 if __name__ == '__main__':
     solvers = [ClingoSolver, ClingoSolverGrouped, CSPSolver, CSPSolverGrouped]
-
+    
+    # clear previous benchmarks
+    with open('benchmark/bench.log','w') as f:
+        f.write('')    
 
 
     for i in range(1000):
