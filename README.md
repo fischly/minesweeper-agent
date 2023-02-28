@@ -39,15 +39,12 @@ python3 solver.py --help
 shows description of all usable parameters:
 
 ```bash
-Usage: python3 solver.py [-h] [--solver [{clingo,clingo-grouped,csp,csp-grouped}]] [--no-trivial] [-w WIDTH] [-he HEIGHT] [-b BOMBS] [-s SEED] [-d DELAY] [-i]
+Usage: python3 solver.py [-h] [-w WIDTH] [-he HEIGHT] [-b BOMBS] [-s SEED] [--solver [{clingo,clingo-grouped,csp,csp-grouped}]] [--no-trivial] [-d DELAY] [-i]
 
 Solves a randomly generated minesweeper instance
 
 options:
   -h, --help            show this help message and exit
-  --solver [{clingo,clingo-grouped,csp,csp-grouped}]
-                        The solving approach to use
-  --no-trivial          If set, do not perform trivial cell opening/marking
   -w WIDTH, --width WIDTH
                         The width of the minesweeper instance
   -he HEIGHT, --height HEIGHT
@@ -55,6 +52,9 @@ options:
   -b BOMBS, --bombs BOMBS
                         The number of bombs of the minesweeper instance
   -s SEED, --seed SEED  Fixes the seed to generate the random minesweeper instance
+  --solver [{clingo,clingo-grouped,csp,csp-grouped}]
+                        The solving approach to use
+  --no-trivial          If set, do not perform trivial cell opening/marking
   -d DELAY, --delay DELAY
                         Delay in milliseconds between performing actions
   -i, --interactive     If set, waits for user input between each action

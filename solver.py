@@ -20,13 +20,13 @@ if __name__ == '__main__':
     logging.getLogger().addHandler(ch)
 
     # parsing arguments
-    parser = argparse.ArgumentParser(prog='solver', description='Solves a randomly generated minesweeper instance')
-    parser.add_argument('--solver', choices=['clingo', 'clingo-grouped', 'csp', 'csp-grouped'], const='clingo', default='clingo', nargs='?', help='The solving approach to use')
-    parser.add_argument('--no-trivial', help='If set, do not perform trivial cell opening/marking', action='store_true')
+    parser = argparse.ArgumentParser(prog='python3 solver.py', description='Solves a randomly generated minesweeper instance')
     parser.add_argument('-w', '--width', help='The width of the minesweeper instance', type=int, default=30) 
     parser.add_argument('-he', '--height', help='The height of the minesweeper instance', type=int, default=16) 
     parser.add_argument('-b', '--bombs', help='The number of bombs of the minesweeper instance', type=int, default=99) 
     parser.add_argument('-s', '--seed', help='Fixes the seed to generate the random minesweeper instance', type=int) 
+    parser.add_argument('--solver', choices=['clingo', 'clingo-grouped', 'csp', 'csp-grouped'], const='clingo', default='clingo', nargs='?', help='The solving approach to use')
+    parser.add_argument('--no-trivial', help='If set, do not perform trivial cell opening/marking', action='store_true')
     parser.add_argument('-d', '--delay', help='Delay in milliseconds between performing actions', type=int) 
     parser.add_argument('-i', '--interactive', help='If set, waits for user input between each action', action='store_true')
 
