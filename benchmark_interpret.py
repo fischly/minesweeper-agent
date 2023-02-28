@@ -43,16 +43,18 @@ def get_bins(runs):
         bins[value] = 0
 
     for seed, success, duration, steps, percentage in runs:
+        if  percentage < 0.8:
+            continue
+
         for value in bin_values:
             if duration < value:
-                # bins[value].append(run)
                 bins[value] += 1
                 break
 
     return bin_values, bins
 
 def get_statistics(runs):
-    durs = [duration for seed, success, duration, steps, percentage in runs]
+    durs = [duration for seed, success, duration, steps, percentage in runs if percentage >= 0.8]
 
     min_val = min(durs)
     max_val = min(durs)
@@ -61,7 +63,9 @@ def get_statistics(runs):
     median = np.median(durs)
     std = np.std(durs)
 
-    return min_val, max_val, average, median, std
+    percentage_solved = sum([1 for seed, success, duration, steps, percentage in runs if percentage >= 0.8]) / len(runs)
+
+    return min_val, max_val, average, median, std, percentage_solved
 
 
 
@@ -72,19 +76,20 @@ if __name__ == '__main__':
     
     for i, solver in enumerate(['ClingoSolver', 'ClingoSolverGrouped', 'CSPSolver', 'CSPSolverGrouped']):
         bin_values, bins = get_bins(grouped_by_solver[solver])
-        min_val, max_val, average, median, std = get_statistics(grouped_by_solver[solver])
+        min_val, max_val, average, median, std, percentage_solved = get_statistics(grouped_by_solver[solver])
 
         ax = axs[i % 2, i // 2]
 
         ax.bar([f'< {str(value)}s' for value in bin_values], list(bins.values()))
-        ax.axis(ymax=350)
+        ax.axis(ymax=275)
         ax.set_title(solver)
         ax.set(ylabel='instances')
         ax.bar_label(ax.containers[0])
 
-        ax.text(5, 300, 'Mean: {:0.2f}s'.format(average), fontsize=12)
-        ax.text(5, 270, 'Median: {:.2f}s'.format(median), fontsize=12)
-        ax.text(5, 240, 'Std.Dev.: {:.2f}s'.format(std), fontsize=12)
+        ax.text(5, 250, '% solved: {:0.2f}%'.format(percentage_solved * 100), fontsize=12)
+        ax.text(5, 220, 'Mean: {:0.2f}s'.format(average), fontsize=12)
+        ax.text(5, 190, 'Median: {:.2f}s'.format(median), fontsize=12)
+        ax.text(5, 160, 'Std.Dev.: {:.2f}s'.format(std), fontsize=12)
 
     plt.margins(x=0)
     plt.show() 
