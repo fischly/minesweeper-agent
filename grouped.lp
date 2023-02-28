@@ -28,10 +28,12 @@ neighbours(X, Y, NX, NY) :-
   width(W), height(H).
 
 % make sure the number of bombs does not exceed the maximum number
-% :- numberOfBombs(NB), #count{ 1,X,Y : bomb(X, Y) } > NB.
+:- numberOfBombs(NB), #count{ 1,X,Y : bomb(X, Y) } > NB.
 
-% each number has to have exactly N bombs around it
-:- asked(AX, AY), number(X, Y, N), neighbours(AX, AY, X, Y), #count{ 1,NX,NY : neighbours(X, Y, NX, NY), bomb(NX, NY) } != N.
+% each number has to have exactly N bombs around it,
+% only consider numbers that are in direct neighbourhood to one asked-cell
+:- number(X, Y, N), #count{ 1,NX,NY : neighbours(X, Y, NX, NY), bomb(NX, NY) } != N, 
+   neighbours(AX, AY, X, Y), asked(AX, AY).
 
 open(X, Y) :- -bomb(X, Y), asked(X, Y).
 

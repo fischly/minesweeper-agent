@@ -32,7 +32,6 @@ class ClingoSolverGrouped:
         groups = self.find_unopened_groups()
 
         for group in groups:
-            
             group_asked = []
             for cell in group:
                 group_asked += self.game._get_closed_neighbours(*cell)
@@ -74,7 +73,6 @@ class ClingoSolverGrouped:
 
         with self.ctl.solve(yield_=True) as hnd:
             for m in hnd:
-                # print(m)
                 symbols = m.symbols(shown=True)
 
                 for symbol in symbols:
@@ -96,8 +94,6 @@ class ClingoSolverGrouped:
 
                 model_count += 1
         
-        # print('ACTIONS:', actions)
-
         proofen_bombs = filter(lambda b: bombs[b] == model_count, bombs)
         for proofen_bomb in proofen_bombs:
             self.game.mark(proofen_bomb[0] - 1, proofen_bomb[1] - 1)
@@ -108,8 +104,6 @@ class ClingoSolverGrouped:
         # select action that occured most often in the answer set
         # at best, it is one that occured in ALL the answer sets, which would make this action 100% safe
         best_action = max(actions, key=actions.get)
-
-        logging.info(f'Selected best action {best_action} which occured in {actions[best_action]} of {model_count} answer sets ({(actions[best_action] / model_count)*100}%).')
 
         return best_action, actions[best_action] / model_count
 
@@ -139,7 +133,6 @@ class ClingoSolverGrouped:
             cv = visible_field[cell[0], cell[1]]
 
             if cv == -2:
-                # if not (self.game.is_closed(*cell) and self.game.is_closed(*last))
                 for neighbour in self.game._get_neighbours(cell[0], cell[1]):
                     
                     if not (self.game.is_closed(*cell) and self.game.is_closed(*neighbour)):

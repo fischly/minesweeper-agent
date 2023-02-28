@@ -48,7 +48,6 @@ class ClingoSolver:
 
         with self.ctl.solve(yield_=True) as hnd:
             for m in hnd:
-                # print(m)
                 symbols = m.symbols(shown=True)
 
                 for symbol in symbols:
@@ -70,9 +69,6 @@ class ClingoSolver:
 
                 model_count += 1
         
-        logging.debug('ACTIONS:', actions)
-        # logging.debug('BOMBS: ', bombs)
-
         proofen_bombs = filter(lambda b: bombs[b] == model_count, bombs)
         for proofen_bomb in proofen_bombs:
             self.game.mark(proofen_bomb[0] - 1, proofen_bomb[1] - 1)
@@ -80,8 +76,6 @@ class ClingoSolver:
         # select action that occured most often in the answer set
         # at best, it is one that occured in ALL the answer sets, which would make this action 100% safe
         best_action = max(actions, key=actions.get)
-
-        logging.info(f'Selected best action {best_action} which occured in {actions[best_action]} of {model_count} answer sets ({(actions[best_action] / model_count)*100}%).')
 
         # return the best action adjusted for a coordinate system that starts with 0 (the clingo implementation starts at 1)
         return (best_action[0] - 1, best_action[1] - 1)

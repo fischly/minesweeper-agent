@@ -7,13 +7,11 @@ import cpmpy
 from minesweeper import Minesweeper
 
 class CSPSolverGrouped:
-
     def __init__(self, game):
         self.game = game
 
     def solve_step(self):
         best_actions = self.solve_groups()
-        # print('BET ACTIONS: ', best_actions)
         best_action = min(best_actions, key=lambda a: a[1])[0]
 
         return best_action
@@ -23,7 +21,6 @@ class CSPSolverGrouped:
 
         # get groups
         groups = self.find_unopened_groups()
-        # print('GROUP LEN: ', len(groups))
 
         for group in groups:
             group_asked = []
@@ -41,16 +38,10 @@ class CSPSolverGrouped:
 
 
     def solve_group(self, asked_for, knowns):
-        # print('========================================================')
-        # print(self.game)
-        # print('ASKED_FOR: ', asked_for)
-        # print('KNOWNS: ', knowns)
-
         visible_field = self.game.get_visible_field()
 
         # the model and variables the solver should assign
         model = cpmpy.Model()
-        # mines = cpmpy.boolvar(shape=visible_field.shape) # 2d boolean variable array, saying if cell (x, y) contains a mine
 
         variables = {}
         self.bomb_count = {}
@@ -60,36 +51,14 @@ class CSPSolverGrouped:
             variables[(x, y)] = cpmpy.boolvar()
             self.bomb_count[(x, y)] = 0
 
-
-        # for x in range(self.game.width):
-        #     for y in range(self.game.height):
-        #         cell = visible_field[x, y]
-
-        #         # cell has been marked as a bomb previously, so provide this as a fact to the solver
-        #         if cell == -3:
-        #             model += mines[x, y] == 1
-
-        #         # cell is a number, which means we want to add the constraint, that the sum of neighbouring mines should be equal to the number value
-        #         if cell >= 0:
-        #             if (x, y) in variables:
-        #             model += mines[x, y] == 0  # cell is a number, so it cannot be a mine
-        #             model += (sum(mines[x + dx, y + dy] for dx in [-1, 0, 1] for dy in [-1, 0, 1] if x + dx >= 0 and x + dx < self.game.width and y + dy >= 0 and y + dy < self.game.height) == int(visible_field[x, y]))
-        
         for x, y in knowns:
-            # model += mines[x, y] == 0  # cell is a number, so it cannot be a mine
-            model += (sum(variables[(x + dx, y + dy)] for dx in [-1, 0, 1] for dy in [-1, 0, 1] \
-                if x + dx >= 0 and x + dx < self.game.width and \
-                   y + dy >= 0 and y + dy < self.game.height and \
-                   (x + dx, y + dy) in variables)  + \
-                     (sum(1 for dx in [-1, 0, 1] for dy in [-1, 0, 1] \
-                        if x + dx >= 0 and x + dx < self.game.width and \
-                           y + dy >= 0 and y + dy < self.game.height and \
-                           visible_field[x + dx, y + dy] == -3)) == int(visible_field[x, y]))
+            model += (sum(variables[(nx, ny)] for nx, ny in self.game._get_neighbours(x, y) if (nx, ny) in variables) + \
+                     (sum(1 for nx, ny in self.game._get_neighbours(x, y) if visible_field[nx, ny] == -3)) \
+                       == int(visible_field[x, y]))
 
 
         # callback for a found model
         def handle_result():
-            # print('VARIABLES: ', variables)
             for x, y in variables.keys():
                 if variables[(x, y)].value():
                     self.bomb_count[(x, y)] += 1 
@@ -99,39 +68,13 @@ class CSPSolverGrouped:
         # ask the solver to provide all models
         models = model.solveAll(display=handle_result)
 
-        # print('------------ FOUND MODELS: ', models)
-
         if self.model_counter <= 0:
             return
 
         safest_cell = min(self.bomb_count, key=self.bomb_count.get)
         safest_cell_occ = self.bomb_count[safest_cell]
 
-        # print('COUNT: ', self.model_counter)
-
-        # print(self.bomb_count)
-
         return safest_cell, safest_cell_occ / self.model_counter
-
-        # # go over each cell and check if it was set to a bomb in every model
-        # # if it was, we can safely mark it as bomb
-        # for x in range(self.game.width):
-        #     for y in range(self.game.height):
-        #         if self.bomb_count[x, y] >= self.model_counter:
-        #             self.game.mark(x, y)
-
-        # # set all cells with already known cells to inf
-        # filtered = np.where(visible_field >= 0, np.inf, self.bomb_count)
-        # # set all cells that resulted in NaN due to the solver not assigning a value since the cell had no constraint
-        # filtered = np.where(np.isnan(filtered), np.inf, filtered)
-        # # find out the cell index which contained least often a bomb over all models (most safe cell to open)
-        # safest_cell = np.unravel_index(np.argmin(filtered), visible_field.shape)
-        
-
-
-        # print (safest_cell, filtered[safest_cell[0], safest_cell[1]] / self.model_counter)
-        # return safest_cell, filtered[safest_cell[0], safest_cell[1]] / self.model_counter
-
 
 
     def find_unopened_groups(self):

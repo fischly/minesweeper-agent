@@ -1,5 +1,4 @@
 
-
 % if there is a number given as fact, then there cannot be a bomb on that field
 -bomb(X, Y) :- number(X, Y, _).
 
@@ -10,7 +9,7 @@ cell(1..W, 1..H) :- width(W), height(H).
 bomb(X, Y) | -bomb(X, Y) :- cell(X, Y).
 
 % every field that is not a bomb consists of a number, which is exactly the number of neighbouring bombs
-number(X, Y, N) :- -bomb(X, Y), N = #count{ 1,NX,NY : neighbours(X, Y, NX, NY), bomb(NX, NY) }.
+% number(X, Y, N) :- -bomb(X, Y), N = #count{ 1,NX,NY : neighbours(X, Y, NX, NY), bomb(NX, NY) }.
 
 % gets all (valid) neighbouring cells
 neighbours(X, Y, X + DX, Y + DY) :- 
@@ -25,4 +24,9 @@ neighbours(X, Y, X + DX, Y + DY) :-
 % each number has to have exactly N bombs around it
 :- number(X, Y, N), #count{ 1,NX,NY : neighbours(X, Y, NX, NY), bomb(NX, NY) } != N.
 
-#show -bomb/2.
+open(X, Y) :- -bomb(X, Y), not number(X, Y, _).
+
+% #show number/3.
+#show open/2.
+#show bomb/2.
+% #show -bomb/2.

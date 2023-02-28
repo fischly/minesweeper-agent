@@ -7,7 +7,6 @@ import cpmpy
 from minesweeper import Minesweeper
 
 class CSPSolver:
-
     def __init__(self, game):
         self.game = game
         
@@ -30,8 +29,7 @@ class CSPSolver:
                 # cell is a number, which means we want to add the constraint, that the sum of neighbouring mines should be equal to the number value
                 if cell >= 0:
                     model += mines[x, y] == 0  # cell is a number, so it cannot be a mine
-                    model += (sum(mines[x + dx, y + dy] for dx in [-1, 0, 1] for dy in [-1, 0, 1] if x + dx >= 0 and x + dx < self.game.width and y + dy >= 0 and y + dy < self.game.height) == int(visible_field[x, y]))
-        
+                    model += sum(mines[nx, ny] for nx, ny in self.game._get_neighbours(x, y)) == int(visible_field[x, y])        
 
         # helper variable to count how often a cell was set to a bomb over all models
         self.bomb_count = np.zeros(visible_field.shape)
@@ -39,7 +37,7 @@ class CSPSolver:
 
         # callback for a found model
         def handle_result():
-            self.bomb_count += np.array(mines.value(), dtype=np.float64)
+            self.bomb_count += np.array(mines.value(), dtype=np.float64) # casting needed to convert Boolean variables to numbers for summation
             self.model_counter += 1
 
         # ask the solver to provide all models

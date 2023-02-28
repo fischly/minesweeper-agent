@@ -20,7 +20,7 @@ if __name__ == '__main__':
     logging.getLogger().addHandler(ch)
 
     # parsing arguments
-    parser = argparse.ArgumentParser(prog='solver-clingo', description='Solves a randomly generated minesweeper instance using Clingo')
+    parser = argparse.ArgumentParser(prog='solver', description='Solves a randomly generated minesweeper instance')
     parser.add_argument('--solver', choices=['clingo', 'clingo-grouped', 'csp', 'csp-grouped'], const='clingo', default='clingo', nargs='?', help='The solving approach to use')
     parser.add_argument('--no-trivial', help='If set, do not perform trivial cell opening/marking', action='store_true')
     parser.add_argument('-w', '--width', help='The width of the minesweeper instance', type=int, default=30) 
@@ -63,7 +63,6 @@ if __name__ == '__main__':
 
     while True:
         best_action = s.solve_step()
-        
         print('=== OPENING ', best_action)
 
         if g.open(*best_action):
@@ -73,7 +72,6 @@ if __name__ == '__main__':
         steps_done += 1
 
         if not args.no_trivial:
-            print('Trivials')
             g.open_trivials()
 
         if g.is_done():
@@ -81,7 +79,6 @@ if __name__ == '__main__':
             print(g)
             break
 
-        # os.system('clear')
         print(g)
 
         if args.interactive:
