@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('-he', '--height', help='The height of the minesweeper instance', type=int, default=16) 
     parser.add_argument('-b', '--bombs', help='The number of bombs of the minesweeper instance', type=int, default=99) 
     parser.add_argument('-s', '--seed', help='Fixes the seed to generate the random minesweeper instance', type=int) 
-    parser.add_argument('--solver', choices=['clingo', 'clingo-grouped', 'csp', 'csp-grouped'], const='clingo', default='clingo', nargs='?', help='The solving approach to use')
+    parser.add_argument('--solver', choices=['clingo', 'clingo-grouped', 'csp', 'csp-grouped'], const='clingo-grouped', default='clingo-grouped', nargs='?', help='The solving approach to use')
     parser.add_argument('--no-trivial', help='If set, do not perform trivial cell opening/marking', action='store_true')
     parser.add_argument('-d', '--delay', help='Delay in milliseconds between performing actions', type=int) 
     parser.add_argument('-i', '--interactive', help='If set, waits for user input between each action', action='store_true')
@@ -46,16 +46,15 @@ if __name__ == '__main__':
         print('Game lost on first cell opened :(')
         exit()
 
-    if args.solver == 'clingo':
-        s = ClingoSolver(g)
-    elif args.solver == 'clingo-grouped':
-        s = ClingoSolverGrouped(g)
-    elif args.solver == 'csp':
-        s = CSPSolver(g)
-    elif args.solver == 'csp-grouped':
-        s = CSPSolverGrouped(g)
-    else:
-        assert False, 'not implemented yet'
+    # instantiate the solver given as argument
+    solver_tuples = [('clingo', ClingoSolver), ('clingo-grouped', ClingoSolverGrouped), ('csp', CSPSolver), ('csp-grouped', CSPSolverGrouped)]
+
+    for solver_name, solver_class in solver_tuples:
+        if args.solver == solver_name:
+            s = solver_class(g)
+
+    if not s:
+        assert False, f'solver "{args.solver}" not implemented'
         
 
     start_time = time.time()
@@ -63,10 +62,10 @@ if __name__ == '__main__':
 
     while True:
         best_action = s.solve_step()
-        print('=== OPENING ', best_action)
+        print(f'--- OPENING {best_action} ---')
 
         if g.open(*best_action):
-            print(' === GAME OVER === ')
+            print('\n===== GAME OVER =====')
             break
         
         steps_done += 1
@@ -75,7 +74,7 @@ if __name__ == '__main__':
             g.open_trivials()
 
         if g.is_done():
-            print(' === WON === ')
+            print('\n===== WON =====')
             print(g)
             break
 
@@ -88,5 +87,6 @@ if __name__ == '__main__':
 
     if not args.interactive:
         print('--- {0:.2f} seconds ---'.format((time.time() - start_time)))
+    print('--- {0:.1f}% cells opened ---'.format(g.percentage_done() * 100))
     print('--- {0} (non-trivial) actions done ---'.format((steps_done)))
     print('--- seed: {} --- '.format(seed))
